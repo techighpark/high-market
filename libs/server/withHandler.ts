@@ -22,7 +22,6 @@ export default function withHandler(
     try {
       await fn(req, res);
     } catch (e) {
-      console.log(e);
       return res.status(500).json({ e });
     }
   };
