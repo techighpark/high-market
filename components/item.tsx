@@ -17,13 +17,16 @@ export default function Item({
   hearts,
 }: ItemProps) {
   return (
-    <Link href={`/items/${id}`}>
+    <Link href={`/products/${id}`}>
       <a className="flex cursor-pointer justify-between border-b px-4 pb-5">
         <div className="flex space-x-4">
           <div className="h-20 w-20 rounded-md bg-gray-400" />
-          <div className="flex flex-col pt-2">
+          <div className="flex flex-col pt-2 ">
             <h3 className="text-sm font-medium text-gray-900">{title}</h3>
-            <span className="mt-1 font-medium text-gray-900">{price}</span>
+            <span className="mt-1 font-medium text-gray-900">
+              <span className="text-sm font-normal text-gray-600">$ </span>
+              {price}
+            </span>
           </div>
         </div>
         <div className="flex items-end justify-end space-x-2">
