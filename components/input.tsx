@@ -66,6 +66,7 @@ export default function Input({
             required={required}
             {...register}
             type={type}
+            placeholder="Phone number"
             className="w-full appearance-none rounded-md rounded-l-none border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 "
           />
         </div>

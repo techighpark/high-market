@@ -15,25 +15,29 @@ interface UploadProductForm {
   description: string;
 }
 
-interface UploadProductMutation {
+interface UploadProductMutationResult {
   ok: boolean;
   product: Product;
 }
 
 const Upload: NextPage = () => {
   const { register, handleSubmit } = useForm<UploadProductForm>();
+
   const [uploadProduct, { data, loading }] =
-    useMutation<UploadProductMutation>("/api/products");
+    useMutation<UploadProductMutationResult>("/api/products");
+
   const onValid = (data: UploadProductForm) => {
     if (loading) return;
     uploadProduct(data);
   };
+
   const router = useRouter();
   useEffect(() => {
     if (data?.ok) {
       router.push(`/products/${data.product.id}`);
     }
   }, [data, router]);
+
   return (
     <Layout canGoBack title="Upload Item">
       <form className="space-y-4 px-4 " onSubmit={handleSubmit(onValid)}>

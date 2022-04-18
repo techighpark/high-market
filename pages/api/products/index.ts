@@ -9,7 +9,13 @@ async function handler(
 ) {
   if (req.method === "GET") {
     const products = await client.product.findMany({
-      where: {},
+      include: {
+        _count: {
+          select: {
+            fav: true,
+          },
+        },
+      },
     });
     res.json({ ok: true, products });
   }
@@ -33,10 +39,7 @@ async function handler(
       },
     });
 
-    res.json({
-      ok: true,
-      product,
-    });
+    res.json({ ok: true, product });
   }
 }
 
