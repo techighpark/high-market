@@ -26,7 +26,7 @@ const Community: NextPage = () => {
   );
 
   return (
-    <Layout title="Community" hasTabBar>
+    <Layout title="Community" hasTabBar seoTitle="Community">
       <div className="space-y-8 px-4">
         {data?.posts?.map(post => (
           <Link key={post.id} href={`/community/${post.id}`}>
@@ -40,7 +40,7 @@ const Community: NextPage = () => {
               </div>
               <div className="tex-gr mt-5 flex w-full items-center justify-between text-xs font-medium">
                 <span>{post.user.name}</span>
-                <span>{post.createdAt}</span>
+                {/* <span>{post.createdAt}</span> */}
               </div>
               <div className="mt-3 flex w-full space-x-5 border-t border-b-[2px] py-2.5 text-gray-700">
                 <span className="flex items-center space-x-2 text-sm">

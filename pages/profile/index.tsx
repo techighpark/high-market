@@ -1,10 +1,14 @@
-import type { NextPage } from "next";
+/* eslint-disable jsx-a11y/alt-text */
+import type { NextPage, NextPageContext } from "next";
 import Link from "next/link";
 import Layout from "@components/layout";
 import useUser from "@libs/client/useUser";
-import useSWR from "swr";
+import useSWR, { SWRConfig } from "swr";
 import { Review, User } from "@prisma/client";
 import { cls } from "@libs/client/utils";
+import Image from "next/image";
+import { withSsrSession } from "@libs/server/withSession";
+import client from "@libs/server/client";
 
 interface ReviewWithUser extends Review {
   createdBy: User;
@@ -17,12 +21,24 @@ interface ReviewResponse {
 const Profile: NextPage = () => {
   const { user, isLoading } = useUser();
   const { data } = useSWR<ReviewResponse>("/api/reviews");
-
   return (
-    <Layout title="Profile" hasTabBar>
+    <Layout
+      title="Profile"
+      hasTabBar
+      seoTitle={user?.name + "'s Profile" || "Profile"}
+    >
       <div className="py-10 px-4">
         <div className="flex items-center space-x-3">
-          <div className="h-16 w-16 rounded-full bg-slate-300" />
+          {user?.avatar ? (
+            <Image
+              height={64}
+              width={64}
+              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${user?.avatar}/avatar`}
+              className="h-16 w-16 rounded-full bg-slate-300"
+            />
+          ) : (
+            <div className="h-16 w-16 rounded-full bg-slate-300" />
+          )}
           <div className="flex flex-col">
             <span className="font-medium text-gray-900">
               {isLoading ? "Loading..." : user?.name}
@@ -142,4 +158,31 @@ const Profile: NextPage = () => {
   );
 };
 
-export default Profile;
+const Page: NextPage<{ profile: User }> = ({ profile }) => {
+  return (
+    <SWRConfig
+      value={{
+        fallback: {
+          "/api/users/me": { ok: true, profile },
+        },
+      }}
+    >
+      <Profile />
+    </SWRConfig>
+  );
+};
+
+export const getServerSideProps = withSsrSession(async function ({
+  req,
+}: NextPageContext) {
+  const profile = await client.user.findUnique({
+    where: { id: req?.session.user?.id },
+  });
+  return {
+    props: {
+      profile: JSON.parse(JSON.stringify(profile)),
+    },
+  };
+});
+
+export default Page;

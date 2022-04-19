@@ -32,7 +32,6 @@ async function handler(
     const {
       query: { latitude, longitude },
     } = req;
-    console.log(latitude, longitude);
 
     const parsedLatitude = parseFloat(latitude.toString());
     const parsedLongitude = parseFloat(longitude.toString());
@@ -65,7 +64,6 @@ async function handler(
         createdAt: "desc",
       },
     });
-    console.log(posts);
     res.json({ ok: true, posts });
   }
 }

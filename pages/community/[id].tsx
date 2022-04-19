@@ -78,6 +78,7 @@ const CommunityPostDetail: NextPage = () => {
     if (answerLoading) return;
     sendAnswer(form);
   };
+
   useEffect(() => {
     if (answerData && answerData.ok) {
       reset();
@@ -85,7 +86,7 @@ const CommunityPostDetail: NextPage = () => {
     }
   }, [answerData, reset, boundMutate]);
   return (
-    <Layout canGoBack>
+    <Layout canGoBack seoTitle={data?.post?.user?.name + " - Community"}>
       <div>
         <span className="my-3 ml-4 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
           동네질문
@@ -160,7 +161,7 @@ const CommunityPostDetail: NextPage = () => {
                   {answer.user.name}
                 </span>
                 <span className="block text-xs text-gray-500 ">
-                  {answer.createdAt}
+                  {/* {answer.createdAt} */}
                 </span>
                 <p className="mt-2 text-gray-700">{answer.answer}</p>
               </div>
