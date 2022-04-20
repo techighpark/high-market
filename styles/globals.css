@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.blog-post-content h1 {
+  @apply mb-5 text-red-500;
+}
+
+.blog-post-content p {
+  @apply mb-2 text-gray-600;
+}
+
+.blog-post-content ul {
+  @apply list-disc pl-10;
+}
+
+/* .abcd {
+  @apply border-4 border-green-400 text-green-500 dark:text-yellow-300;
+} */

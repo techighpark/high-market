@@ -25,7 +25,12 @@ async function handler(
       },
     });
 
-    res.json({ ok: true, post });
+    await res.unstable_revalidate("/community");
+
+    res.json({
+      ok: true,
+      post,
+    });
   }
 
   if (req.method === "GET") {

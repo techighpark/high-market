@@ -42,6 +42,9 @@ model Token {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+
+
+  @@index([userId])
 }
 
 model Product {
@@ -59,6 +62,8 @@ model Product {
   sales       Sale[]
   purchases   Purchase[]
   records     Record[]
+
+  @@index([userId])
 }
 
 model Post {
@@ -72,6 +77,9 @@ model Post {
   wonderings Wondering[]
   latitude   Float?
   longitude  Float?
+
+
+  @@index([userId])
 }
 
 model Answer {
@@ -83,6 +91,10 @@ model Answer {
   postId    Int
   userId    Int
   answer    String   @db.MediumText
+
+
+  @@index([userId])
+  @@index([postId])
 }
 
 model Wondering {
@@ -93,6 +105,10 @@ model Wondering {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   postId    Int
   userId    Int
+
+
+  @@index([userId])
+  @@index([postId])
 }
 
 model Review {
@@ -107,6 +123,9 @@ model Review {
   createdForId Int
   score        Int @default(1)
 
+
+  @@index([createdById])
+  @@index([createdForId])
 }
 
 model Sale {
@@ -118,6 +137,10 @@ model Sale {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId    Int
   productId Int
+
+
+  @@index([userId])
+  @@index([productId])
 }
 
 model Purchase {
@@ -129,6 +152,10 @@ model Purchase {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId    Int
   productId Int
+
+
+  @@index([userId])
+  @@index([productId])
 }
 
 model Fav {
@@ -140,6 +167,10 @@ model Fav {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId    Int
   productId Int
+
+
+  @@index([userId])
+  @@index([productId])
 }
 
 model Record {
@@ -152,6 +183,10 @@ model Record {
   userId    Int
   productId Int
   kind      Kind
+
+
+  @@index([userId])
+  @@index([productId])
 }
 
 enum Kind {
@@ -171,6 +206,9 @@ model Stream {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
   messages    Message[]
+
+
+  @@index([userId])
 }
 
 model Message {
@@ -183,4 +221,8 @@ model Message {
   stream   Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
   userId   Int
   streamId Int
+
+
+  @@index([userId])
+  @@index([streamId])
 }

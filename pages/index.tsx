@@ -18,7 +18,6 @@ interface ProductResponse {
 const Home: NextPage = () => {
   // const { user, isLoading } = useUser();
   const { data, error } = useSWR<ProductResponse>("/api/products");
-  console.log(data);
 
   return (
     <Layout title="Home" hasTabBar seoTitle="Home">
@@ -75,6 +74,7 @@ const Page: NextPage<{ products: ProductWitFav[] }> = ({ products }) => {
 };
 
 export async function getServerSideProps() {
+  console.log("SSR INDEX");
   const products = await client.product.findMany({});
   return {
     props: {

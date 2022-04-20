@@ -1,16 +1,16 @@
 /* eslint-disable jsx-a11y/alt-text */
-import type { NextPage } from "next";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Button from "@components/button";
 import Layout from "@components/layout";
 import { useRouter } from "next/router";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { Product, User } from "@prisma/client";
-// import useUser from "@libs/client/useUser";
 import Link from "next/link";
 import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
 import useUser from "@libs/client/useUser";
 import Image from "next/image";
+import client from "@libs/server/client";
 
 interface ProductWithUser extends Product {
   user: User;
@@ -23,11 +23,14 @@ interface ProductDetailResponse {
   isLiked: boolean;
 }
 
-const ItemDetail: NextPage = () => {
+const ItemDetail: NextPage<ProductDetailResponse> = ({
+  products,
+  similartProducts,
+  isLiked,
+}) => {
   const router = useRouter();
-  const { user } = useUser();
-  // const { user, isLoading } = useUser();
-  // const { mutate } = useSWRConfig();
+  const { user, isLoading } = useUser();
+  const { mutate } = useSWRConfig();
   const { data, mutate: boundMutation } = useSWR<ProductDetailResponse>(
     router.query.id ? `/api/products/${router.query.id}` : null
   );
@@ -37,17 +40,24 @@ const ItemDetail: NextPage = () => {
   const onFavClick = () => {
     if (!data) return;
     boundMutation(prev => prev && { ...prev, isLiked: !data.isLiked }, false);
-    // mutate("/api/users/me", (prev: any) => ({ ok: !prev.ok }), false);
+    // // mutate("/api/users/me", (prev: any) => ({ ok: !prev.ok }), false);
     toggleFav({});
   };
 
+  if (router.isFallback) {
+    return (
+      <Layout title="Loading for you" seoTitle="...Loading">
+        <span>Loding this page !</span>
+      </Layout>
+    );
+  }
   return (
-    <Layout title="Item" canGoBack seoTitle={data?.products?.name + "'s Item"}>
-      <div className=" px-4 py-4">
+    <Layout title="Item" canGoBack seoTitle={products?.name + "'s Item"}>
+      <div className="px-4 py-4">
         <div className="mb-8">
           <div className="relative pb-48">
             <Image
-              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${data?.products?.image}/public`}
+              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${products?.image}/public`}
               layout="fill"
               className=" w-full rounded-md object-cover"
             />
@@ -61,9 +71,9 @@ const ItemDetail: NextPage = () => {
             />
             <div>
               <p className="text-sm font-medium text-gray-700">
-                {data?.products?.user.name}
+                {products?.user.name}
               </p>
-              <Link href={`/users/profiles/${data?.products?.user.id}`}>
+              <Link href={`/users/profiles/${products?.user.id}`}>
                 <a className="text-xs font-medium text-gray-500">
                   View profile &rarr;
                 </a>
@@ -72,13 +82,13 @@ const ItemDetail: NextPage = () => {
           </div>
           <div className="mt-5">
             <h1 className="text-3xl font-bold text-gray-900">
-              {data?.products?.name}
+              {products?.name}
             </h1>
             <span className="mt-3 block text-2xl text-gray-900">
-              ${data?.products?.price}
+              ${products?.price}
             </span>
             <p className="my-6 text-base text-gray-700">
-              {data?.products?.description}
+              {products?.description}
             </p>
             <div className="flex items-center justify-between space-x-2">
               <Button text="Talk to seller" lg />
@@ -86,12 +96,12 @@ const ItemDetail: NextPage = () => {
                 onClick={onFavClick}
                 className={cls(
                   "flex items-center justify-center rounded-md p-3 hover:bg-gray-100 ",
-                  data?.isLiked
+                  isLiked
                     ? "text-red-500  hover:text-red-600"
                     : "text-gray-400  hover:text-gray-500"
                 )}
               >
-                {data?.isLiked ? (
+                {isLiked ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6"
@@ -128,7 +138,7 @@ const ItemDetail: NextPage = () => {
         <div className="">
           <h2 className="text-2xl font-bold text-gray-900">Similar items</h2>
           <div className="mt-6 grid grid-cols-2 gap-4 ">
-            {data?.similartProducts?.map(product => (
+            {similartProducts?.map(product => (
               <div key={product.id}>
                 <div className="mb-4 h-56 w-full bg-slate-300" />
                 <h3 className="-mb-1 text-gray-700">{product.name}</h3>
@@ -142,6 +152,60 @@ const ItemDetail: NextPage = () => {
       </div>
     </Layout>
   );
+};
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return {
+    paths: [],
+    fallback: true,
+  };
+};
+
+export const getStaticProps: GetStaticProps = async ctx => {
+  if (!ctx?.params?.id) {
+    return {
+      props: {},
+    };
+  }
+
+  const products = await client.product.findUnique({
+    where: {
+      id: +ctx.params.id.toString(),
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+    },
+  });
+
+  const terms = products?.name
+    .split(" ")
+    .map(term => ({ name: { contains: term } }));
+
+  const similartProducts = await client.product.findMany({
+    where: {
+      OR: terms,
+      AND: {
+        id: {
+          not: products?.id,
+        },
+      },
+    },
+  });
+
+  const isLiked = false;
+  return {
+    props: {
+      products: JSON.parse(JSON.stringify(products)),
+      similartProducts: JSON.parse(JSON.stringify(similartProducts)),
+      isLiked,
+    },
+  };
 };
 
 export default ItemDetail;
