@@ -22,6 +22,7 @@ export default function ProductList({ kind }: ProductListPorps) {
         <Item
           key={record.id}
           id={record.product.id}
+          img={record.product.image}
           title={record.product.name}
           price={record.product.price}
           comments={1}
