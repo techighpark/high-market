@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import Button from "@components/button";
-import Input from "@components/input";
+import Input, { Kind } from "@components/input";
 import Layout from "@components/layout";
 import Textarea from "@components/textarea";
 import { useForm } from "react-hook-form";
@@ -44,7 +44,7 @@ const Create: NextPage = () => {
           type="text"
           label="Name"
           name="name"
-          kind="text"
+          kind={Kind.text}
         />
         <Input
           register={register("price", { required: true, valueAsNumber: true })}
@@ -53,7 +53,7 @@ const Create: NextPage = () => {
           placeholder="0.00"
           name="price"
           type="text"
-          kind="price"
+          kind={Kind.price}
         />
         <Textarea
           register={register("description", { required: true })}
