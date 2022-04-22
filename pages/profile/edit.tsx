@@ -1,13 +1,14 @@
 /* eslint-disable jsx-a11y/alt-text */
 import type { NextPage } from "next";
 import Button from "@components/button";
-import Input from "@components/input";
+import Input, { Kind } from "@components/input";
 import Layout from "@components/layout";
 import useUser from "@libs/client/useUser";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import useMutation from "@libs/client/useMutation";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 interface EditProfileForm {
   email?: string;
@@ -94,6 +95,13 @@ const EditProfile: NextPage = () => {
       setAvatarPreview(URL.createObjectURL(file));
     }
   }, [avatar]);
+  const router = useRouter();
+  useEffect(() => {
+    console.log(data);
+    if (data && data.ok) {
+      router.push("/profile");
+    }
+  }, [router, data]);
   return (
     <Layout canGoBack seoTitle="Edit Profile">
       <div className="px-4">Hello, {user?.name}</div>
@@ -133,6 +141,7 @@ const EditProfile: NextPage = () => {
           label="Name"
           name="name"
           type="text"
+          kind={Kind.text}
         />
         <Input
           register={register("email", {
@@ -144,6 +153,7 @@ const EditProfile: NextPage = () => {
           label="Email address"
           name="email"
           type="email"
+          kind={Kind.text}
         />
         <Input
           register={register("phone", {
@@ -155,7 +165,7 @@ const EditProfile: NextPage = () => {
           label="Phone number"
           name="phone"
           type="number"
-          kind="phone"
+          kind={Kind.phone}
         />
         {errors && errors.formErrors ? (
           <span className="my-2 block pt-4 text-center text-xs font-medium text-red-500">

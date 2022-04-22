@@ -1,9 +1,13 @@
 /* eslint-disable jsx-a11y/alt-text */
-import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
+import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  NextPage,
+} from "next";
 import Button from "@components/button";
 import Layout from "@components/layout";
-import { useRouter } from "next/router";
-import useSWR, { useSWRConfig } from "swr";
+import router, { useRouter } from "next/router";
+import useSWR, { SWRConfig, useSWRConfig } from "swr";
 import { Product, User } from "@prisma/client";
 import Link from "next/link";
 import useMutation from "@libs/client/useMutation";
@@ -11,97 +15,107 @@ import { cls } from "@libs/client/utils";
 import useUser from "@libs/client/useUser";
 import Image from "next/image";
 import client from "@libs/server/client";
+import { withSsrSession } from "@libs/server/withSession";
+import { useEffect } from "react";
 
 interface ProductWithUser extends Product {
   user: User;
 }
 
 interface ProductDetailResponse {
-  ok: boolean;
+  // ok: boolean;
   products: ProductWithUser;
   similartProducts: Product[];
   isLiked: boolean;
 }
 
-const ItemDetail: NextPage<ProductDetailResponse> = ({
-  products,
-  similartProducts,
-  isLiked,
-}) => {
+export const ItemDetail: NextPage = () => {
   const router = useRouter();
   const { user, isLoading } = useUser();
-  const { mutate } = useSWRConfig();
+  // const { mutate } = useSWRConfig();
   const { data, mutate: boundMutation } = useSWR<ProductDetailResponse>(
     router.query.id ? `/api/products/${router.query.id}` : null
   );
-
+  const [openChat, { data: chatData }] = useMutation(`/api/chats`);
   const [toggleFav] = useMutation(`/api/products/${router.query.id}/fav`);
 
   const onFavClick = () => {
     if (!data) return;
-    boundMutation(prev => prev && { ...prev, isLiked: !data.isLiked }, false);
+    // boundMutation({ ...data, isLiked: !data.isLiked }, false);
+    boundMutation(prev => prev && { ...prev, isLiked: !prev.isLiked }, false);
     // // mutate("/api/users/me", (prev: any) => ({ ok: !prev.ok }), false);
     toggleFav({});
   };
 
-  if (router.isFallback) {
-    return (
-      <Layout title="Loading for you" seoTitle="...Loading">
-        <span>Loding this page !</span>
-      </Layout>
-    );
-  }
+  // if (router.isFallback) {
+  //   return (
+  //     <Layout title="Loading for you" seoTitle="...Loading">
+  //       <span>Loding this page !</span>
+  //     </Layout>
+  //   );
+  const onTalkClick = () => {
+    openChat(router.query);
+  };
+  useEffect(() => {
+    if (chatData?.ok) {
+      router.push(`/chats/${chatData.chatRoom.id}`);
+    }
+  }, [chatData, router]);
+
   return (
-    <Layout title="Item" canGoBack seoTitle={products?.name + "'s Item"}>
+    <Layout title="Item" canGoBack seoTitle={data?.products?.name + "'s Item"}>
       <div className="px-4 py-4">
         <div className="mb-8">
-          <div className="relative pb-48">
+          <div className="= relative flex aspect-square w-full">
             <Image
-              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${products?.image}/public`}
+              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${data?.products?.image}/public`}
+              // width={350}
+              // height={350}
+              priority
               layout="fill"
               className=" w-full rounded-md object-cover"
             />
           </div>
           <div className="flex cursor-pointer items-center space-x-3 border-t border-b py-3 ">
             <Image
-              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${user?.avatar}/avatar`}
+              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${data?.products?.user?.avatar}/avatar`}
               className="h-12 w-12 rounded-full bg-slate-300"
               width={48}
               height={48}
             />
             <div>
               <p className="text-sm font-medium text-gray-700">
-                {products?.user.name}
+                {data?.products?.user.name}
               </p>
-              <Link href={`/users/profiles/${products?.user.id}`}>
+              <Link href={`/users/profiles/${data?.products?.user.id}`}>
                 <a className="text-xs font-medium text-gray-500">
                   View profile &rarr;
                 </a>
               </Link>
             </div>
           </div>
-          <div className="mt-5">
+          <div className="mt-5 w-full">
             <h1 className="text-3xl font-bold text-gray-900">
-              {products?.name}
+              {data?.products?.name}
             </h1>
             <span className="mt-3 block text-2xl text-gray-900">
-              ${products?.price}
+              ${data?.products?.price}
             </span>
             <p className="my-6 text-base text-gray-700">
-              {products?.description}
+              {data?.products?.description}
             </p>
             <div className="flex items-center justify-between space-x-2">
-              <Button text="Talk to seller" lg />
+              <Button text="Talk to seller" lg onClick={onTalkClick} />
               <button
                 onClick={onFavClick}
                 className={cls(
                   "flex items-center justify-center rounded-md p-3 hover:bg-gray-100 ",
-                  isLiked
+                  data?.isLiked
                     ? "text-red-500  hover:text-red-600"
                     : "text-gray-400  hover:text-gray-500"
                 )}
               >
-                {isLiked ? (
+                {data?.isLiked ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6"
@@ -138,9 +152,15 @@ const ItemDetail: NextPage<ProductDetailResponse> = ({
         <div className="">
           <h2 className="text-2xl font-bold text-gray-900">Similar items</h2>
           <div className="mt-6 grid grid-cols-2 gap-4 ">
-            {similartProducts?.map(product => (
+            {data?.similartProducts?.map(product => (
               <div key={product.id}>
-                <div className="mb-4 h-56 w-full bg-slate-300" />
+                <div className="relative aspect-square w-full overflow-hidden rounded-md">
+                  <Image
+                    className="mb-4 bg-slate-300 object-cover"
+                    layout="fill"
+                    src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${product.image}/public`}
+                  />
+                </div>
                 <h3 className="-mb-1 text-gray-700">{product.name}</h3>
                 <span className="text-sm font-medium text-gray-900">
                   ${product.price}
@@ -154,23 +174,101 @@ const ItemDetail: NextPage<ProductDetailResponse> = ({
   );
 };
 
-export const getStaticPaths: GetStaticPaths = () => {
-  return {
-    paths: [],
-    fallback: true,
-  };
+// export const getStaticPaths: GetStaticPaths = () => {
+//   return {
+//     paths: [],
+//     fallback: true,
+//   };
+// };
+
+// export const getStaticProps: GetStaticProps = async ctx => {
+//   if (!ctx?.params?.id) {
+//     return {
+//       props: {},
+//     };
+//   }
+
+//   const products = await client.product.findUnique({
+//     where: {
+//       id: +ctx.params.id.toString(),
+//     },
+//     include: {
+//       user: {
+//         select: {
+//           id: true,
+//           name: true,
+//           avatar: true,
+//         },
+//       },
+//     },
+//   });
+
+//   const terms = products?.name
+//     .split(" ")
+//     .map(term => ({ name: { contains: term } }));
+
+//   const similartProducts = await client.product.findMany({
+//     where: {
+//       OR: terms,
+//       AND: {
+//         id: {
+//           not: products?.id,
+//         },
+//       },
+//     },
+//   });
+
+//   const isLiked = false;
+
+//   if (!products) {
+//     return {
+//       redirect: {
+//         destination: "/",
+//         permanent: false,
+//       },
+//     };
+//   }
+//   return {
+//     props: {
+//       products: JSON.parse(JSON.stringify(products)),
+//       similartProducts: JSON.parse(JSON.stringify(similartProducts)),
+//       isLiked,
+//     },
+//   };
+// };
+
+const Page: NextPage<ProductDetailResponse> = ({
+  products,
+  similartProducts,
+  isLiked,
+}) => {
+  const router = useRouter();
+  return (
+    <SWRConfig
+      value={{
+        fallback: {
+          [`/api/products/${router.query.id}`]: {
+            ok: true,
+            products,
+            similartProducts,
+            isLiked,
+          },
+        },
+      }}
+    >
+      <ItemDetail />
+    </SWRConfig>
+  );
 };
 
-export const getStaticProps: GetStaticProps = async ctx => {
-  if (!ctx?.params?.id) {
-    return {
-      props: {},
-    };
-  }
-
+export const getServerSideProps = withSsrSession(async function (
+  ctx: GetServerSidePropsContext
+) {
+  const { id } = ctx?.params!;
+  if (!id) return;
   const products = await client.product.findUnique({
     where: {
-      id: +ctx.params.id.toString(),
+      id: +id,
     },
     include: {
       user: {
@@ -198,7 +296,26 @@ export const getStaticProps: GetStaticProps = async ctx => {
     },
   });
 
-  const isLiked = false;
+  const isLiked = Boolean(
+    await client.fav.findFirst({
+      where: {
+        userId: ctx?.req?.session?.user?.id,
+        productId: products?.id,
+      },
+      select: {
+        id: true,
+      },
+    })
+  );
+
+  if (!products) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
   return {
     props: {
       products: JSON.parse(JSON.stringify(products)),
@@ -206,6 +323,6 @@ export const getStaticProps: GetStaticProps = async ctx => {
       isLiked,
     },
   };
-};
+});
 
-export default ItemDetail;
+export default Page;

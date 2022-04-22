@@ -10,7 +10,7 @@ async function handler(
   if (req.method === "GET") {
     const streams = await client.stream.findMany({
       take: 10,
-      skip: 20,
+      skip: 0,
     });
     res.json({ ok: true, streams });
   }

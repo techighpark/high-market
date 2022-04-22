@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 import type { NextPage } from "next";
 import Button from "@components/button";
-import Input from "@components/input";
+import Input, { Kind } from "@components/input";
 import Layout from "@components/layout";
 import Textarea from "@components/textarea";
 import { useForm } from "react-hook-form";
@@ -36,23 +36,18 @@ const Upload: NextPage = () => {
     photo,
   }: UploadProductForm) => {
     if (loading) return;
-
-    if (photo && photo.length > 0) {
-      const { uploadURL } = await (await fetch(`/api/files`)).json();
-      const form = new FormData();
-      form.append("file", photo[0], name);
-      const {
-        result: { id },
-      } = await (await fetch(uploadURL, { method: "POST", body: form })).json();
-      uploadProduct({ name, price, description, photoId: id });
-    } else {
-      uploadProduct({ name, price, description });
-    }
+    const { uploadURL } = await (await fetch(`/api/files`)).json();
+    const form = new FormData();
+    form.append("file", photo[0], name);
+    const {
+      result: { id },
+    } = await (await fetch(uploadURL, { method: "POST", body: form })).json();
+    uploadProduct({ name, price, description, photoId: id });
   };
 
   useEffect(() => {
     if (data?.ok) {
-      router.push(`/products/${data.product.id}`);
+      router.replace(`/products/${data.product.id}`);
     }
   }, [data, router]);
 
@@ -66,16 +61,40 @@ const Upload: NextPage = () => {
 
   return (
     <Layout canGoBack title="Upload Item" seoTitle="Upload Item">
-      <form className="space-y-4 px-4 pb-20 " onSubmit={handleSubmit(onValid)}>
-        <div className="relative pb-48">
+      <form
+        className="flex flex-col items-center justify-center space-y-4 px-4 pb-20"
+        onSubmit={handleSubmit(onValid)}
+      >
+        <div className="relative aspect-square w-3/5">
           {photoPreview ? (
-            <Image
-              src={photoPreview}
-              layout="fill"
-              className=" w-full rounded-md object-cover"
-            />
+            <>
+              <Image
+                src={photoPreview}
+                layout="fill"
+                className="rounded-md object-cover"
+              />
+              <span
+                onClick={() => setPhotoPreview("")}
+                className="absolute right-3 top-2 cursor-pointer text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </span>
+            </>
           ) : (
-            <label className="flex h-48 w-full cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-gray-300 text-gray-600 hover:border-orange-500 hover:text-orange-500">
+            <label className="flex aspect-square w-full cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-gray-300 text-gray-600 hover:border-orange-500 hover:text-orange-500">
               <svg
                 className="h-12 w-12"
                 stroke="currentColor"
@@ -104,6 +123,7 @@ const Upload: NextPage = () => {
           name="name"
           label="Name"
           type="text"
+          kind={Kind.text}
           required
         />
         <Input
@@ -111,7 +131,7 @@ const Upload: NextPage = () => {
           name="price"
           label="Price"
           type="number"
-          kind="price"
+          kind={Kind.price}
           placeholder="0.00"
           required
         />

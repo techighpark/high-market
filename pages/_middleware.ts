@@ -8,8 +8,6 @@ export function middleware(req: NextRequest, ev: NextFetchEvent) {
 
   if (!req.url.includes("/api")) {
     if (!req.url.includes("/enter") && !req.cookies.highsession) {
-      // const url = req.nextUrl.clone();
-      // url.pathname = "/enter";
       return NextResponse.redirect(new URL("/enter", req.url));
     }
   }

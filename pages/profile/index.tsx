@@ -30,12 +30,13 @@ const Profile: NextPage = () => {
       <div className="py-10 px-4">
         <div className="flex items-center space-x-3">
           {user?.avatar ? (
-            <Image
-              height={64}
-              width={64}
-              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${user?.avatar}/avatar`}
-              className="h-16 w-16 rounded-full bg-slate-300"
-            />
+            <div className="relative h-16 w-16">
+              <Image
+                layout="fill"
+                src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${user?.avatar}/avatar`}
+                className="hidden rounded-full bg-slate-300 object-cover"
+              />
+            </div>
           ) : (
             <div className="h-16 w-16 rounded-full bg-slate-300" />
           )}

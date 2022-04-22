@@ -1,9 +1,14 @@
 import type { UseFormRegisterReturn } from "react-hook-form";
 
+export enum Kind {
+  text = "text",
+  phone = "phone",
+  price = "price",
+}
 interface InputProps {
   label: string;
   name: string;
-  kind?: "text" | "phone" | "price";
+  kind?: Kind;
   type: string;
   register: UseFormRegisterReturn;
   required: boolean;
@@ -13,14 +18,14 @@ interface InputProps {
 export default function Input({
   label,
   name,
-  kind = "text",
+  kind,
   register,
   type,
   required,
   placeholder,
 }: InputProps) {
   return (
-    <div>
+    <div className="w-full">
       <label
         className="mb-1 block text-sm font-medium text-gray-700"
         htmlFor={name}

@@ -11,9 +11,9 @@ async function handler(
     query: { id },
   } = req;
 
-  const stream = await client.stream.findUnique({
+  const chatRoom = await client.chat.findUnique({
     where: {
-      id: +id.toString(),
+      id: +id,
     },
     include: {
       messages: {
@@ -30,11 +30,7 @@ async function handler(
       },
     },
   });
-
-  if (!stream) {
-    res.json({ ok: false });
-  }
-  res.json({ ok: true, stream });
+  res.json({ ok: true, chatRoom });
 }
 
 export default withApiSession(withHandler({ methods: ["GET"], handler }));

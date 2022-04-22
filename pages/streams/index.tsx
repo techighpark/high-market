@@ -12,6 +12,7 @@ interface StreamsResponse {
 
 const Streams: NextPage = () => {
   const { data } = useSWR<StreamsResponse>(`/api/streams`);
+
   return (
     <Layout hasTabBar title="Stream" seoTitle="Stream">
       <div className="space-y-4 divide-y-[1px]">

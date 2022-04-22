@@ -38,6 +38,9 @@ async function handler(
         id: {
           not: products?.id,
         },
+        userId: {
+          not: user?.id,
+        },
       },
     },
   });

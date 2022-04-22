@@ -9,6 +9,11 @@ async function handler(
 ) {
   if (req.method === "GET") {
     const products = await client.product.findMany({
+      where: {
+        userId: {
+          not: req?.session?.user?.id,
+        },
+      },
       include: {
         _count: {
           select: {

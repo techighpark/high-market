@@ -14,7 +14,7 @@ export default function Textarea({
   ...rest
 }: TextareaProps) {
   return (
-    <div>
+    <div className="w-full">
       {label ? (
         <label
           htmlFor={name}

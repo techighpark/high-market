@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Button from "@components/button";
-import Input from "@components/input";
+import Input, { Kind } from "@components/input";
 import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
 import { useRouter } from "next/router";
@@ -78,6 +78,7 @@ const Enter: NextPage = () => {
               name="token"
               label="Confirmation Token"
               type="number"
+              kind={Kind.text}
               required
             />
 
@@ -124,6 +125,7 @@ const Enter: NextPage = () => {
                   name="email"
                   label="Email address"
                   type="email"
+                  kind={Kind.text}
                   required
                 />
               ) : null}
@@ -135,7 +137,7 @@ const Enter: NextPage = () => {
                   name="phone"
                   label="Phone number"
                   type="number"
-                  kind="phone"
+                  kind={Kind.phone}
                   required
                 />
               ) : null}

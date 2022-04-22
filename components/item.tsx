@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
+import Image from "next/image";
 import Link from "next/link";
 import { title } from "process";
 
@@ -5,6 +7,7 @@ interface ItemProps {
   id: number;
   title: string;
   price: number;
+  img: string;
   comments: number;
   hearts: number;
 }
@@ -14,13 +17,20 @@ export default function Item({
   title,
   price,
   comments,
+  img,
   hearts,
 }: ItemProps) {
   return (
     <Link href={`/products/${id}`}>
       <a className="flex cursor-pointer justify-between border-b px-4 pb-5">
         <div className="flex space-x-4">
-          <div className="h-20 w-20 rounded-md bg-gray-400" />
+          <div className="relative h-20 w-20">
+            <Image
+              className="rounded-md bg-gray-400 object-cover"
+              layout="fill"
+              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${img}/avatar`}
+            />
+          </div>
           <div className="flex flex-col pt-2 ">
             <h3 className="text-sm font-medium text-gray-900">{title}</h3>
             <span className="mt-1 font-medium text-gray-900">
