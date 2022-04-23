@@ -17,6 +17,11 @@ async function handler(
       id: +id.toString(),
     }, //******/
     include: {
+      progress: {
+        select: {
+          state: true,
+        },
+      },
       user: {
         select: {
           id: true,

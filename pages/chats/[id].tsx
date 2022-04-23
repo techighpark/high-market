@@ -4,11 +4,14 @@ import Msg from "@components/message";
 import useSWR, { SWRConfig } from "swr";
 import client from "@libs/server/client";
 import { withSsrSession } from "@libs/server/withSession";
-import { Chat, Message, User } from "@prisma/client";
+import { Chat, Product, Progress, User } from "@prisma/client";
 import { useRouter } from "next/router";
 import useMutation from "@libs/client/useMutation";
 import { useForm } from "react-hook-form";
 import useUser from "@libs/client/useUser";
+import SmallButton from "@components/smallButton";
+import SquareImage from "@components/squareImage";
+import Link from "next/link";
 
 interface ChatMessageWithUser {
   id: number;
@@ -19,9 +22,14 @@ interface ChatMessageWithUser {
   };
 }
 
+interface ProductProgress extends Product {
+  progress: Progress;
+}
+
 interface ChatWithMessage extends Chat {
   messages: ChatMessageWithUser[];
   users: User[];
+  product: ProductProgress;
 }
 interface ChatMsgResponse {
   ok: boolean;
@@ -67,9 +75,143 @@ const ChatDetail: NextPage = () => {
       false
     );
   };
+  const [updateState, { data: stateData, loading: reserveLoading }] =
+    useMutation(`/api/products/${data?.chatRoom.productId}/state`);
+
+  const onClickReserve = () => {
+    if (reserveLoading) return;
+    updateState({ id: data?.chatRoom.productId, state: "reserve" });
+    mutate(
+      prev =>
+        prev && {
+          ...prev,
+          chatRoom: {
+            ...prev.chatRoom,
+            product: {
+              ...prev.chatRoom.product,
+              progress: stateData?.state?.state,
+            },
+          },
+        },
+      false
+    );
+  };
+  const onClickDone = () => {
+    if (reserveLoading) return;
+    updateState({
+      id: data?.chatRoom.productId,
+      state: "done",
+      users: data?.chatRoom?.users,
+    });
+    mutate(
+      prev =>
+        prev && {
+          ...prev,
+          chatRoom: {
+            ...prev.chatRoom,
+            product: {
+              ...prev.chatRoom.product,
+              progress: stateData?.state?.state,
+            },
+          },
+        },
+      false
+    );
+  };
+
   return (
     <Layout title="Chat" canGoBack seoTitle={"Chat with " + "User"}>
-      <div className="space-y-4 py-10 px-4 pb-16">
+      <div className=" relative flex justify-between border-b px-4 py-4">
+        <Link href={`/products/${data?.chatRoom?.productId}`}>
+          <a>
+            <div className=" flex items-start space-x-2 font-normal">
+              <div className="my-auto">
+                <SquareImage
+                  src={data?.chatRoom?.product?.image!}
+                  size="w-12 h-12"
+                />
+              </div>
+              <div className="my-auto flex flex-col space-y-1 ">
+                <span className="text-sm font-bold text-gray-700">
+                  {data?.chatRoom?.product?.name}
+                </span>
+                <span className="text-xs font-medium text-gray-500">
+                  $ {data?.chatRoom?.product?.price}
+                </span>
+              </div>
+            </div>
+          </a>
+        </Link>
+        <div className=" flex flex-col justify-center space-y-2">
+          {data?.chatRoom?.product?.userId === user?.id ? (
+            <SmallButton
+              text="Done"
+              disable={true}
+              onClick={onClickDone}
+              clicked={data?.chatRoom?.product?.progress?.state === "sold"}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </SmallButton>
+          ) : (
+            ""
+          )}
+          {data?.chatRoom?.product?.progress?.state === "sold" &&
+          data?.chatRoom?.product?.userId !== user?.id ? (
+            <div className="">
+              <span className="absolute inset-0 z-10 flex h-full w-full items-center justify-center text-xs font-bold text-white">
+                Sorry, already sold.
+              </span>
+              <div className="absolute inset-0 h-full w-full bg-orange-600 opacity-80" />
+            </div>
+          ) : (
+            <SmallButton
+              text={
+                data?.chatRoom?.product?.progress?.state === "reserved"
+                  ? "Reserved"
+                  : "Reserve"
+              }
+              clicked={data?.chatRoom?.product?.progress?.state === "reserved"}
+              disable={
+                data?.chatRoom?.product?.progress?.userId !== undefined
+                  ? data?.chatRoom?.product?.progress?.userId === user?.id ||
+                    data?.chatRoom?.product?.userId === user?.id
+                  : true
+              }
+              sold={data?.chatRoom?.product?.progress?.state === "sold"}
+              onClick={onClickReserve}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </SmallButton>
+          )}
+        </div>
+      </div>
+      <div className="space-y-4 px-4 pb-20 pt-4">
         {data?.chatRoom?.messages?.map(message => (
           <div key={message.id}>
             <Msg

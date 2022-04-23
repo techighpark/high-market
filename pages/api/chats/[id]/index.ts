@@ -16,6 +16,11 @@ async function handler(
       id: +id,
     },
     include: {
+      users: {
+        select: {
+          id: true,
+        },
+      },
       messages: {
         select: {
           id: true,
@@ -24,6 +29,20 @@ async function handler(
             select: {
               id: true,
               avatar: true,
+            },
+          },
+        },
+      },
+      product: {
+        select: {
+          userId: true,
+          name: true,
+          price: true,
+          image: true,
+          progress: {
+            select: {
+              state: true,
+              userId: true,
             },
           },
         },

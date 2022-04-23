@@ -16,12 +16,16 @@ export default function Msg({ reversed, message, avatarUrl }: MessageProps) {
         reversed ? "flex-row-reverse space-x-2 space-x-reverse" : "space-x-2"
       )}
     >
-      <div className="relative h-8 w-8 overflow-hidden rounded-full bg-slate-300">
-        <Image
-          src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${avatarUrl}/public`}
-          layout="fill"
-          className="object-cover"
-        />
+      <div className="relative h-8 w-8">
+        {avatarUrl ? (
+          <Image
+            src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${avatarUrl}/public`}
+            layout="fill"
+            className="rounded-full object-cover"
+          />
+        ) : (
+          <div className="h-8 w-8 rounded-full bg-slate-300" />
+        )}
       </div>
       <div
         className={cls(

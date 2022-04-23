@@ -54,7 +54,7 @@ async function handler(
       res.json({ ok: true });
     }
 
-    if (phone && phone !== currentUser?.phone) {
+    if ((phone && phone !== currentUser?.phone) || "") {
       const alreadExists = Boolean(
         await client.user.findUnique({
           where: {
@@ -65,6 +65,7 @@ async function handler(
           },
         })
       );
+
       if (alreadExists) {
         res.json({ ok: false, error: "This phone number already taken." });
       }
@@ -98,7 +99,7 @@ async function handler(
         },
       });
     }
-    res.json({ ok: false, error: "You didn't change both of them." });
+    res.json({ ok: true });
   }
 }
 

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import useMutation from "@libs/client/useMutation";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import RoundImage from "@components/roundImage";
 
 interface EditProfileForm {
   email?: string;
@@ -38,16 +39,15 @@ const EditProfile: NextPage = () => {
   const [editProfile, { data, loading }] =
     useMutation<EditProfileResponse>(`/api/users/me`);
   const onValid = async ({ email, phone, name, avatar }: EditProfileForm) => {
+    // console.log(email, phone, name, avatar);
     if (loading) return;
     if (email === "" && phone === "" && name === "") {
       return setError("formErrors", {
-        message: "Email or Phone number are required.",
+        message: "Name and Email or Phone number are required.",
       });
     }
-    if (avatar && avatar.length > 0 && user) {
-      // ask for CF URL
-      // upload file to CF URL
 
+    if (avatar && avatar.length > 0 && user) {
       const cloudflareRequest = await fetch(`/api/files`);
       const { uploadURL } = await cloudflareRequest.json();
       const form = new FormData();
@@ -83,11 +83,11 @@ const EditProfile: NextPage = () => {
         `https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${user?.avatar}/avatar`
       );
   }, [setValue, user]);
-  // useEffect(() => {
-  //   if (data && !data.ok && data.error) {
-  //     setError("formErrors", { message: data.error });
-  //   }
-  // }, [data, setError]);
+  useEffect(() => {
+    if (data && !data.ok && data.error) {
+      setError("formErrors", { message: data.error });
+    }
+  }, [data, setError]);
   const avatar = watch("avatar");
   useEffect(() => {
     if (avatar && avatar.length > 0) {
@@ -108,14 +108,15 @@ const EditProfile: NextPage = () => {
       <form onSubmit={handleSubmit(onValid)} className="space-y-4 py-5 px-4">
         <div className="flex items-center space-x-3">
           {avatarPreview ? (
-            <Image
-              height={112}
-              width={112}
-              src={avatarPreview}
-              className="h-28 w-28 rounded-full bg-slate-500"
-            />
+            <div className="relative h-20 w-20">
+              <Image
+                layout="fill"
+                src={avatarPreview}
+                className="rounded-full bg-slate-500 object-cover"
+              />
+            </div>
           ) : (
-            <div className="h-28 w-28 rounded-full bg-slate-500" />
+            <div className="h-20 w-20 rounded-full bg-slate-500" />
           )}
           <label
             htmlFor="picture"

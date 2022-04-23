@@ -26,6 +26,8 @@ export default function ProductList({ kind }: ProductListPorps) {
           title={record.product.name}
           price={record.product.price}
           comments={1}
+          isLiked={false}
+          state={record?.product?.progress?.state}
           hearts={record.product._count.favs}
         />
       ))}

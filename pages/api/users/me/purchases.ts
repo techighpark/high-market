@@ -18,6 +18,11 @@ async function handler(
     include: {
       product: {
         include: {
+          progress: {
+            select: {
+              state: true,
+            },
+          },
           _count: {
             select: {
               favs: true,
@@ -27,6 +32,7 @@ async function handler(
       },
     },
   });
+  console.log(purchases);
 
   res.json({
     ok: true,

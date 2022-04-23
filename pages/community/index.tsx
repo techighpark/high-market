@@ -2,10 +2,13 @@ import type { NextPage } from "next";
 import Link from "next/link";
 import FloatingButton from "@components/floatingButton";
 import Layout from "@components/layout";
-import useSWR from "swr";
+import useSWR, { SWRConfig } from "swr";
 import { Post, User } from "@prisma/client";
 import useCoords from "@libs/client/useCoords";
 import client from "@libs/server/client";
+import { userInfo } from "os";
+import useUser from "@libs/client/useUser";
+import { cls } from "@libs/client/utils";
 interface PostWithUser extends Post {
   user: User;
   _count: {
@@ -14,22 +17,23 @@ interface PostWithUser extends Post {
   };
 }
 interface PostResponse {
-  // ok: boolean;
+  ok: boolean;
   posts: PostWithUser[];
 }
 
-const Community: NextPage<PostResponse> = ({ posts }) => {
-  // const { latitude, longitude } = useCoords();
-  // const { data } = useSWR<PostResponse>(
-  //   latitude && longitude
-  //     ? `/api/posts?latitude=${latitude}&longitude=${longitude}`
-  //     : null
-  // );
+const Community: NextPage = () => {
+  const { user } = useUser();
+  const { latitude, longitude } = useCoords();
+  const { data } = useSWR<PostResponse>(
+    latitude && longitude
+      ? `/api/posts?latitude=${latitude}&longitude=${longitude}`
+      : null
+  );
 
   return (
     <Layout title="Community" hasTabBar seoTitle="Community">
       <div className="space-y-8 px-4">
-        {posts?.map(post => (
+        {data?.posts?.map(post => (
           <Link key={post.id} href={`/community/${post.id}`}>
             <a className=" flex cursor-pointer flex-col items-start">
               <span className="flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
@@ -39,9 +43,27 @@ const Community: NextPage<PostResponse> = ({ posts }) => {
                 <span className="font-medium text-orange-500">Q.</span>
                 {post.question}
               </div>
-              <div className="tex-gr mt-5 flex w-full items-center justify-between text-xs font-medium">
-                <span>{post.user.name}</span>
-                {/* <span>{post.createdAt}</span> */}
+              <div className=" mt-5 flex w-full items-center justify-between text-xs font-medium">
+                {post.user.id === user?.id ? (
+                  <span className="rounded-full border border-orange-500 p-1 font-normal text-orange-500">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"
+                      />
+                    </svg>
+                  </span>
+                ) : (
+                  post.user.name
+                )}
               </div>
               <div className="mt-3 flex w-full space-x-5 border-t border-b-[2px] py-2.5 text-gray-700">
                 <span className="flex items-center space-x-2 text-sm">
@@ -103,9 +125,35 @@ const Community: NextPage<PostResponse> = ({ posts }) => {
   );
 };
 
-export async function getStaticProps() {
-  console.log("BUILDING COMM. STATICALLY");
-  const posts = await client.post.findMany({ include: { user: true } });
+const Page: NextPage<{ posts: Post[] }> = ({ posts }) => {
+  const { latitude, longitude } = useCoords();
+
+  return (
+    <SWRConfig
+      value={{
+        fallback: {
+          [`/api/posts?latitude=${latitude}&longitude=${longitude}`]: {
+            ok: true,
+            posts,
+          },
+        },
+      }}
+    >
+      <Community />
+    </SWRConfig>
+  );
+};
+
+export async function getServerSideProps() {
+  // console.log("BUILDING COMM. STATICALLY");
+  const posts = await client.post.findMany({
+    include: {
+      user: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
   return {
     props: {
       posts: JSON.parse(JSON.stringify(posts)),
@@ -114,4 +162,4 @@ export async function getStaticProps() {
   };
 }
 
-export default Community;
+export default Page;

@@ -7,8 +7,9 @@ import client from "@libs/server/client";
 import { Chat, Message, Product, User } from "@prisma/client";
 import { withSsrSession } from "@libs/server/withSession";
 import useUser from "@libs/client/useUser";
-import { cls } from "@libs/client/utils";
 import Image from "next/image";
+import { Fragment } from "react";
+import RoundImage from "@components/roundImage";
 
 interface ProductWithUser extends Product {
   user: User;
@@ -33,19 +34,15 @@ const Chats: NextPage = () => {
         {data?.chatRooms?.map(chat => (
           <Link key={chat.id} href={`/chats/${chat.id}`}>
             <a className="flex cursor-pointer items-start space-x-3 px-4 py-3">
-              <div className="relative h-12 w-12">
-                {chat.users.map(chatUser => {
-                  if (user?.id && chatUser.id !== user.id)
-                    return (
-                      <Image
-                        key={chatUser.id}
-                        src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${chatUser.avatar}/public`}
-                        layout="fill"
-                        className={"rounded-full bg-slate-300 object-cover"}
-                      />
-                    );
-                })}
-              </div>
+              {chat.users.map(chatUser => {
+                if (user?.id && chatUser.id !== user.id) {
+                  return (
+                    <Fragment key={chatUser.id}>
+                      <RoundImage src={chatUser.avatar!} lg={false} />
+                    </Fragment>
+                  );
+                }
+              })}
               <div className="flex flex-col">
                 {chat.users.map(chatUser => {
                   if (user?.id && chatUser.id !== user.id)
@@ -117,6 +114,7 @@ export const getServerSideProps = withSsrSession(
         },
       },
     });
+
     return {
       props: {
         chatRooms: JSON.parse(JSON.stringify(chatRooms)),

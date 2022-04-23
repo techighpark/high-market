@@ -34,6 +34,7 @@ model User {
   streams         Stream[]
   messages        Message[]
   chat            Chat[]
+  Progress        Progress[]
 }
 
 model Token {
@@ -46,6 +47,25 @@ model Token {
 
 
   @@index([userId])
+}
+
+enum State {
+  reserved
+  sold
+}
+
+model Progress {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int      @unique
+  state     State
+
+  @@index([userId])
+  @@index([productId])
 }
 
 model Product {
@@ -64,6 +84,8 @@ model Product {
   purchases   Purchase[]
   records     Record[]
   chat        Chat[]
+  progress    Progress?
+
 
   @@index([userId])
 }

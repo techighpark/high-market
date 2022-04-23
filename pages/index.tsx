@@ -3,12 +3,15 @@ import FloatingButton from "@components/floatingButton";
 import Item from "@components/item";
 import Layout from "@components/layout";
 import useSWR, { SWRConfig } from "swr";
-import { Product } from "@prisma/client";
+import { Fav, Product, Progress } from "@prisma/client";
 import client from "@libs/server/client";
 import { withSsrSession } from "@libs/server/withSession";
+import useUser from "@libs/client/useUser";
 
 export interface ProductWitFav extends Product {
   _count: { favs: number };
+  favs: Fav[];
+  progress?: Progress;
 }
 interface ProductResponse {
   ok: boolean;
@@ -16,6 +19,7 @@ interface ProductResponse {
 }
 
 const Home: NextPage = () => {
+  const { user } = useUser();
   const { data, error } = useSWR<ProductResponse>("/api/products");
 
   return (
@@ -29,6 +33,10 @@ const Home: NextPage = () => {
             price={product.price}
             img={product.image}
             comments={1}
+            state={product.progress?.state}
+            isLiked={Boolean(
+              product.favs?.map(fav => fav.userId).includes(user?.id!)
+            )}
             hearts={product._count?.favs || 0}
           />
         ))}

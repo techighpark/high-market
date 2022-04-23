@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { cls } from "@libs/client/utils";
@@ -30,7 +29,7 @@ export default function Layout({
       <Head>
         <title>{seoTitle} | High-Market</title>
       </Head>
-      <div className="fixed top-0 z-10 flex h-12 w-full min-w-[350px] max-w-xl items-center justify-center border-b bg-white px-10 text-lg font-medium text-gray-800">
+      <div className="fixed top-0 z-10 flex h-12 w-full min-w-[350px] max-w-xl items-center justify-center border-b  bg-white px-10 text-lg font-medium text-gray-800">
         {canGoBack ? (
           <button onClick={onClickGoBack} className="absolute left-4">
             <svg
@@ -53,7 +52,7 @@ export default function Layout({
           <span className={cls(canGoBack ? "mx-auto" : "", "")}>{title}</span>
         ) : null}
       </div>
-      <div className={cls("pt-16", hasTabBar ? "pb-20" : "")}>{children}</div>
+      <div className={cls("pt-12", hasTabBar ? "pb-16" : "")}>{children}</div>
       {hasTabBar ? (
         <nav className="fixed bottom-0 flex w-full min-w-[350px] max-w-xl justify-between border-t bg-white px-6 pb-5 pt-3 text-xs text-gray-700">
           <IconLink href={"/"} text="Home" pathname={router.pathname}>

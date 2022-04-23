@@ -8,7 +8,7 @@ import Button from "@components/button";
 import Layout from "@components/layout";
 import router, { useRouter } from "next/router";
 import useSWR, { SWRConfig, useSWRConfig } from "swr";
-import { Product, User } from "@prisma/client";
+import { Product, Progress, User } from "@prisma/client";
 import Link from "next/link";
 import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
@@ -17,9 +17,11 @@ import Image from "next/image";
 import client from "@libs/server/client";
 import { withSsrSession } from "@libs/server/withSession";
 import { useEffect } from "react";
+import RoundImage from "@components/roundImage";
 
 interface ProductWithUser extends Product {
   user: User;
+  progress: Progress;
 }
 
 interface ProductDetailResponse {
@@ -47,12 +49,6 @@ export const ItemDetail: NextPage = () => {
     toggleFav({});
   };
 
-  // if (router.isFallback) {
-  //   return (
-  //     <Layout title="Loading for you" seoTitle="...Loading">
-  //       <span>Loding this page !</span>
-  //     </Layout>
-  //   );
   const onTalkClick = () => {
     openChat(router.query);
   };
@@ -69,20 +65,13 @@ export const ItemDetail: NextPage = () => {
           <div className="= relative flex aspect-square w-full">
             <Image
               src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${data?.products?.image}/public`}
-              // width={350}
-              // height={350}
               priority
               layout="fill"
               className=" w-full rounded-md object-cover"
             />
           </div>
           <div className="flex cursor-pointer items-center space-x-3 border-t border-b py-3 ">
-            <Image
-              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${data?.products?.user?.avatar}/avatar`}
-              className="h-12 w-12 rounded-full bg-slate-300"
-              width={48}
-              height={48}
-            />
+            <RoundImage src={data?.products?.user?.avatar!} lg={false} />
             <div>
               <p className="text-sm font-medium text-gray-700">
                 {data?.products?.user.name}
@@ -105,7 +94,16 @@ export const ItemDetail: NextPage = () => {
               {data?.products?.description}
             </p>
             <div className="flex items-center justify-between space-x-2">
-              <Button text="Talk to seller" lg onClick={onTalkClick} />
+              <Button
+                text={
+                  data?.products?.progress?.state === "sold"
+                    ? "Sold out"
+                    : "Talk to seller"
+                }
+                lg
+                state={data?.products?.progress?.state === "sold"}
+                onClick={onTalkClick}
+              />
               <button
                 onClick={onFavClick}
                 className={cls(

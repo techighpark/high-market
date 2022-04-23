@@ -9,6 +9,7 @@ import { cls } from "@libs/client/utils";
 import Image from "next/image";
 import { withSsrSession } from "@libs/server/withSession";
 import client from "@libs/server/client";
+import RoundImage from "@components/roundImage";
 
 interface ReviewWithUser extends Review {
   createdBy: User;
@@ -29,17 +30,7 @@ const Profile: NextPage = () => {
     >
       <div className="py-10 px-4">
         <div className="flex items-center space-x-3">
-          {user?.avatar ? (
-            <div className="relative h-16 w-16">
-              <Image
-                layout="fill"
-                src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${user?.avatar}/avatar`}
-                className="hidden rounded-full bg-slate-300 object-cover"
-              />
-            </div>
-          ) : (
-            <div className="h-16 w-16 rounded-full bg-slate-300" />
-          )}
+          <RoundImage src={user?.avatar!} lg />
           <div className="flex flex-col">
             <span className="font-medium text-gray-900">
               {isLoading ? "Loading..." : user?.name}

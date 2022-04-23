@@ -25,16 +25,15 @@ const Write: NextPage = () => {
 
   const [post, { loading, data }] = useMutation<WriteResponse>("/api/posts");
 
-  const onValid = (data: WriteForm) => {
+  const onValid = (form: WriteForm) => {
     if (loading) return;
-    post({ ...data, latitude, longitude });
+    post({ ...form, latitude, longitude });
   };
 
   const router = useRouter();
-
   useEffect(() => {
     if (data && data.ok) {
-      router.push(`/community/${data.post.id}`);
+      router.replace(`/community/${data.post.id}`);
     }
   }, [data, router]);
 
