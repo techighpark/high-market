@@ -48,7 +48,7 @@ const ChatDetail: NextPage = () => {
   );
   const { data, mutate } = useSWR<ChatMsgResponse>(
     router.query.id ? `/api/chats/${router.query.id}` : null,
-    { refreshInterval: 2000 }
+    { refreshInterval: 5000 }
   );
 
   const onValid = (form: SendMsgForm) => {

@@ -25,21 +25,29 @@ const Home: NextPage = () => {
   return (
     <Layout title="Home" hasTabBar seoTitle="Home">
       <div className="flex flex-col space-y-5 ">
-        {data?.products?.map(product => (
-          <Item
-            key={product.id}
-            id={product.id}
-            title={product.name}
-            price={product.price}
-            img={product.image}
-            comments={1}
-            state={product.progress?.state}
-            isLiked={Boolean(
-              product.favs?.map(fav => fav.userId).includes(user?.id!)
-            )}
-            hearts={product._count?.favs || 0}
-          />
-        ))}
+        {data?.products.length === 0 ? (
+          <div className="flex items-center justify-center pt-36 ">
+            <span className="text-xs font-semibold text-gray-500">
+              No items posted yet
+            </span>
+          </div>
+        ) : (
+          data?.products?.map(product => (
+            <Item
+              key={product.id}
+              id={product.id}
+              title={product.name}
+              price={product.price}
+              img={product.image}
+              comments={1}
+              state={product.progress?.state}
+              isLiked={Boolean(
+                product.favs?.map(fav => fav.userId).includes(user?.id!)
+              )}
+              hearts={product._count?.favs || 0}
+            />
+          ))
+        )}
         <FloatingButton href="/products/upload">
           <svg
             className="h-6 w-6"

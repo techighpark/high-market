@@ -50,6 +50,22 @@ async function handler(
     },
   });
 
+  const comments = await client.comment.findMany({
+    where: {
+      productId: +id,
+    },
+    select: {
+      id: true,
+      comment: true,
+      user: {
+        select: {
+          name: true,
+          avatar: true,
+        },
+      },
+    },
+  });
+
   const isLiked = Boolean(
     await client.fav.findFirst({
       where: {
@@ -62,7 +78,7 @@ async function handler(
     })
   );
 
-  res.json({ ok: true, products, isLiked, similartProducts });
+  res.json({ ok: true, products, isLiked, similartProducts, comments });
 }
 
 export default withApiSession(withHandler({ methods: ["GET"], handler }));

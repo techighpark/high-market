@@ -1,24 +1,33 @@
 /* eslint-disable jsx-a11y/alt-text */
-import type {
-  GetServerSideProps,
-  GetServerSidePropsContext,
-  NextPage,
-} from "next";
+import type { GetServerSidePropsContext, NextPage } from "next";
 import Button from "@components/button";
 import Layout from "@components/layout";
-import router, { useRouter } from "next/router";
-import useSWR, { SWRConfig, useSWRConfig } from "swr";
-import { Product, Progress, User } from "@prisma/client";
+import { useRouter } from "next/router";
+import useSWR, { SWRConfig } from "swr";
+import { Comment, Product, Progress, User } from "@prisma/client";
 import Link from "next/link";
 import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
-import useUser from "@libs/client/useUser";
 import Image from "next/image";
 import client from "@libs/server/client";
 import { withSsrSession } from "@libs/server/withSession";
 import { useEffect } from "react";
 import RoundImage from "@components/roundImage";
+import { useForm } from "react-hook-form";
+import useUser from "@libs/client/useUser";
 
+interface CommentWithUser {
+  id: number;
+  comment: string;
+  user: {
+    name: string;
+    avatar?: string;
+  };
+}
+
+interface CommentForm {
+  comment: string;
+}
 interface ProductWithUser extends Product {
   user: User;
   progress: Progress;
@@ -29,48 +38,72 @@ interface ProductDetailResponse {
   products: ProductWithUser;
   similartProducts: Product[];
   isLiked: boolean;
+  comments: CommentWithUser[];
 }
 
 export const ItemDetail: NextPage = () => {
   const router = useRouter();
-  const { user, isLoading } = useUser();
   // const { mutate } = useSWRConfig();
-  const { data, mutate: boundMutation } = useSWR<ProductDetailResponse>(
-    router.query.id ? `/api/products/${router.query.id}` : null
+  const user = useUser();
+  const { data, mutate: boundMutate } = useSWR<ProductDetailResponse>(
+    router.query.id ? `/api/products/${router.query.id}` : null,
+    { refreshInterval: 5000 }
   );
+
   const [openChat, { data: chatData }] = useMutation(`/api/chats`);
   const [toggleFav] = useMutation(`/api/products/${router.query.id}/fav`);
 
+  const { register, handleSubmit, reset } = useForm<CommentForm>();
+
+  const [newComment] = useMutation(`/api/products/${router.query.id}/comment`);
+
+  const onComment = (form: CommentForm) => {
+    newComment(form);
+    boundMutate(
+      prev =>
+        prev &&
+        ({
+          ...prev,
+          comments: [
+            ...prev.comments,
+            { id: Date.now(), comment: form.comment, user: { ...user } },
+          ],
+        } as any),
+      false
+    );
+    reset();
+  };
+
   const onFavClick = () => {
     if (!data) return;
-    // boundMutation({ ...data, isLiked: !data.isLiked }, false);
-    boundMutation(prev => prev && { ...prev, isLiked: !prev.isLiked }, false);
+    boundMutate(prev => prev && { ...prev, isLiked: !prev.isLiked }, false);
     // // mutate("/api/users/me", (prev: any) => ({ ok: !prev.ok }), false);
     toggleFav({});
   };
-
   const onTalkClick = () => {
     openChat(router.query);
   };
+
   useEffect(() => {
     if (chatData?.ok) {
       router.push(`/chats/${chatData.chatRoom.id}`);
     }
   }, [chatData, router]);
-
   return (
     <Layout title="Item" canGoBack seoTitle={data?.products?.name + "'s Item"}>
-      <div className="px-4 py-4">
-        <div className="mb-8">
-          <div className="= relative flex aspect-square w-full">
-            <Image
-              src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${data?.products?.image}/public`}
-              priority
-              layout="fill"
-              className=" w-full rounded-md object-cover"
-            />
+      <div className="py-4">
+        <div className=" mb-8">
+          <div className="px-4">
+            <div className="relative flex aspect-square w-full">
+              <Image
+                src={`https://imagedelivery.net/y59bDhDAuiAOBKkFYsga6Q/${data?.products?.image}/public`}
+                priority={true}
+                layout="fill"
+                className=" w-full rounded-md object-cover"
+              />
+            </div>
           </div>
-          <div className="flex cursor-pointer items-center space-x-3 border-t border-b py-3 ">
+          <div className="mt-4 flex cursor-pointer items-center space-x-3 border-t border-b py-3 px-4">
             <RoundImage src={data?.products?.user?.avatar!} lg={false} />
             <div>
               <p className="text-sm font-medium text-gray-700">
@@ -83,7 +116,7 @@ export const ItemDetail: NextPage = () => {
               </Link>
             </div>
           </div>
-          <div className="mt-5 w-full">
+          <div className="mt-5 w-full px-4">
             <h1 className="text-3xl font-bold text-gray-900">
               {data?.products?.name}
             </h1>
@@ -146,8 +179,55 @@ export const ItemDetail: NextPage = () => {
               </button>
             </div>
           </div>
+          <div className="mt-8 border-t border-b px-4 pb-2">
+            <form
+              onSubmit={handleSubmit(onComment)}
+              className="relative flex w-full max-w-md flex-col items-start space-y-2 border-b py-4"
+            >
+              <label htmlFor="comment">
+                <span className="text-sm font-semibold text-gray-500">
+                  Comment
+                </span>
+              </label>
+              <input
+                id="comment"
+                type="text"
+                {...register("comment", { required: true })}
+                className="h-8 w-full rounded-full border-gray-300 pr-12 text-xs shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500"
+              />
+              <div className="absolute top-10 bottom-4 right-0 flex py-1 pr-1.5">
+                <button className="flex items-center rounded-full bg-orange-500 px-3 text-xs text-white hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                  &rarr;
+                </button>
+              </div>
+            </form>
+            <div className=" max-h-[50vh] space-y-1 overflow-y-scroll py-2 pb-0">
+              {data?.comments?.map(comment => (
+                <div
+                  key={comment.id}
+                  className="flex items-center border-b px-2 py-1"
+                >
+                  <div>
+                    <RoundImage
+                      src={comment?.user?.avatar!}
+                      lg={false}
+                      sm={true}
+                    />
+                  </div>
+                  <div className="flex flex-col pl-2">
+                    <span className="text-xs font-medium text-gray-500">
+                      {comment?.user?.name}
+                    </span>
+                    <span className="text-sm text-gray-800">
+                      {comment?.comment}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="">
+        <div className="px-4">
           <h2 className="text-2xl font-bold text-gray-900">Similar items</h2>
           <div className="mt-6 grid grid-cols-2 gap-4 ">
             {data?.similartProducts?.map(product => (
@@ -239,6 +319,7 @@ const Page: NextPage<ProductDetailResponse> = ({
   products,
   similartProducts,
   isLiked,
+  comments,
 }) => {
   const router = useRouter();
   return (
@@ -250,6 +331,7 @@ const Page: NextPage<ProductDetailResponse> = ({
             products,
             similartProducts,
             isLiked,
+            comments,
           },
         },
       }}
@@ -269,6 +351,11 @@ export const getServerSideProps = withSsrSession(async function (
       id: +id,
     },
     include: {
+      progress: {
+        select: {
+          state: true,
+        },
+      },
       user: {
         select: {
           id: true,
@@ -289,6 +376,22 @@ export const getServerSideProps = withSsrSession(async function (
       AND: {
         id: {
           not: products?.id,
+        },
+      },
+    },
+  });
+
+  const comments = await client.comment.findMany({
+    where: {
+      productId: +id,
+    },
+    select: {
+      id: true,
+      comment: true,
+      user: {
+        select: {
+          name: true,
+          avatar: true,
         },
       },
     },
@@ -318,6 +421,7 @@ export const getServerSideProps = withSsrSession(async function (
     props: {
       products: JSON.parse(JSON.stringify(products)),
       similartProducts: JSON.parse(JSON.stringify(similartProducts)),
+      comments: JSON.parse(JSON.stringify(comments)),
       isLiked,
     },
   };

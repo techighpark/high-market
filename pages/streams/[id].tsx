@@ -45,7 +45,7 @@ const StreamDetails: NextPage = () => {
   const onValid = (form: MessageForm) => {
     if (loading) return;
     reset();
-    // sendMessage(form);
+    sendMessage(form);
     mutate(
       prev =>
         prev &&
