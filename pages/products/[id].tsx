@@ -186,7 +186,7 @@ export const ItemDetail: NextPage = () => {
             >
               <label htmlFor="comment">
                 <span className="text-sm font-semibold text-gray-500">
-                  Comment
+                  Comments
                 </span>
               </label>
               <input

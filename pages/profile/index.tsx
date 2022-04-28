@@ -6,10 +6,12 @@ import useUser from "@libs/client/useUser";
 import useSWR, { SWRConfig } from "swr";
 import { Review, User } from "@prisma/client";
 import { cls } from "@libs/client/utils";
-import Image from "next/image";
 import { withSsrSession } from "@libs/server/withSession";
 import client from "@libs/server/client";
 import RoundImage from "@components/roundImage";
+import useMutation from "@libs/client/useMutation";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 
 interface ReviewWithUser extends Review {
   createdBy: User;
@@ -21,7 +23,17 @@ interface ReviewResponse {
 
 const Profile: NextPage = () => {
   const { user, isLoading } = useUser();
+  const router = useRouter();
   const { data } = useSWR<ReviewResponse>("/api/reviews");
+  const [logOut, { data: logOutData }] = useMutation(`/api/users/logOut`);
+  const onClickLogOut = () => {
+    logOut({});
+  };
+  useEffect(() => {
+    if (logOutData && logOutData?.ok) {
+      router.replace("/enter");
+    }
+  }, [logOutData, router]);
   return (
     <Layout
       title="Profile"
@@ -29,15 +41,25 @@ const Profile: NextPage = () => {
       seoTitle={user?.name + "'s Profile" || "Profile"}
     >
       <div className="py-10 px-4">
-        <div className="flex items-center space-x-3">
-          <RoundImage src={user?.avatar!} lg />
-          <div className="flex flex-col">
-            <span className="font-medium text-gray-900">
-              {isLoading ? "Loading..." : user?.name}
-            </span>
-            <Link href={"/profile/edit"}>
-              <a className="text-sm text-gray-700">Edit profile &rarr;</a>
-            </Link>
+        <div className="flex items-center justify-between space-x-3">
+          <div className="flex items-center space-x-3">
+            <RoundImage src={user?.avatar!} lg />
+            <div className="flex flex-col">
+              <span className="font-medium text-gray-900">
+                {isLoading ? "Loading..." : user?.name}
+              </span>
+              <Link href={"/profile/edit"}>
+                <a className="text-sm text-gray-700">Edit profile &rarr;</a>
+              </Link>
+            </div>
+          </div>
+          <div>
+            <button
+              onClick={onClickLogOut}
+              className="cursor-pointer rounded-md border border-gray-300 py-2 px-3 text-sm font-medium text-gray-700 shadow-sm focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+            >
+              Log Out
+            </button>
           </div>
         </div>
         <div className="mt-10 flex justify-around">

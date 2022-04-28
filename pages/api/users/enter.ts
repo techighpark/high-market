@@ -24,7 +24,7 @@ async function handler(
   const user = phone ? { phone } : email ? { email } : null;
   if (!user) return res.status(400).json({ ok: false });
   const payload = Math.floor(100000 + Math.random() * 900000) + "";
-  const token = await client.token.create({
+  await client.token.create({
     data: {
       payload,
       user: {
@@ -42,25 +42,25 @@ async function handler(
   });
 
   if (phone) {
-    // await twilioClient.messages.create({
-    //   messagingServiceSid: process.env.TWILIO_SERVICE_SID,
-    //   to: process.env.PHONE_NUM!,
-    //   body: `Your login token is ${payload}`,
-    // });
+    console.log("phone");
+    await twilioClient.messages.create({
+      messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+      to: process.env.PHONE_NUM!,
+      body: `Your login token is ${payload}`,
+    });
   } else if (email) {
-    // const sendEmail = await transporter.sendMail({
-    //   from: `High-Market`,
-    //   to: process.env.GMAIL_ID,
-    //   subject: "High-Market Login",
-    //   text: `your login token is ${payload}`,
-    //   html: `
-    //     <div style="text-align: center;">
-    //       <p>Your login token is</p>
-    //       <strong style="color:blue;">${payload}</strong>
-    //     </div>
-    // `,
-    // });
-    // console.log(sendEmail);
+    await transporter.sendMail({
+      from: `High-Market`,
+      to: process.env.GMAIL_ID,
+      subject: "High-Market Login Token",
+      text: `your login token is ${payload}`,
+      html: `
+        <div style="text-align: center;">
+          <p>Your login token is</p>
+          <strong style="color:blue;">${payload}</strong>
+        </div>
+    `,
+    });
   }
   return res.json({
     ok: true,

@@ -104,11 +104,10 @@ const EditProfile: NextPage = () => {
   }, [router, data]);
   return (
     <Layout canGoBack seoTitle="Edit Profile">
-      <div className="px-4">Hello, {user?.name}</div>
       <form onSubmit={handleSubmit(onValid)} className="space-y-4 py-5 px-4">
         <div className="flex items-center space-x-3">
           {avatarPreview ? (
-            <div className="relative h-20 w-20">
+            <div className="relative h-16 w-16">
               <Image
                 layout="fill"
                 src={avatarPreview}
@@ -116,7 +115,7 @@ const EditProfile: NextPage = () => {
               />
             </div>
           ) : (
-            <div className="h-20 w-20 rounded-full bg-slate-500" />
+            <div className="h-16 w-16 rounded-full bg-slate-300" />
           )}
           <label
             htmlFor="picture"
