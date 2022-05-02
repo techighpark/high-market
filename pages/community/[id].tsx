@@ -133,7 +133,7 @@ const CommunityPostDetail: NextPage = () => {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 ></path>
               </svg>
-              <span>Check {data?.post?._count?.wonderings}</span>
+              <span>Me too {data?.post?._count?.wonderings}</span>
             </button>
             <span className="flex items-center space-x-2 text-sm">
               <svg
@@ -157,11 +157,15 @@ const CommunityPostDetail: NextPage = () => {
         <div className="my-5 space-y-5 px-4 ">
           {data?.post?.answers?.map(answer => (
             <div
-              className="flex items-center justify-start space-x-3"
+              className="flex items-center justify-start space-x-3 "
               key={answer.id}
             >
-              <div className="h-8 w-8 rounded-full bg-slate-200" />
-              <div className=" flex w-full flex-col items-start  font-normal">
+              {answer.user.avatar ? (
+                <RoundImage src={answer.user.avatar!} sm={true} lg={false} />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-slate-200" />
+              )}
+              <div className=" flex  flex-col items-start   font-normal">
                 {answer.user.id === user?.id ? (
                   <div className="rounded-full text-orange-600">
                     <svg

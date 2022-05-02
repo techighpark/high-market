@@ -92,11 +92,11 @@ export const getServerSideProps = withSsrSession(async function ({
 }: NextPageContext) {
   console.log("SSR INDEX");
   const products = await client.product.findMany({
-    where: {
-      userId: {
-        not: req?.session?.user?.id,
-      },
-    },
+    // where: {
+    //   userId: {
+    //     not: req?.session?.user?.id,
+    //   },
+    // },
   });
   return {
     props: {

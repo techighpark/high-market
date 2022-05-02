@@ -13,11 +13,11 @@ async function handler(
     } = req;
 
     const products = await client.product.findMany({
-      where: {
-        userId: {
-          not: user?.id,
-        },
-      },
+      // where: {
+      //   userId: {
+      //     not: user?.id,
+      //   },
+      // },
       include: {
         progress: {
           select: {

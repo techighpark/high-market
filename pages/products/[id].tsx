@@ -373,11 +373,6 @@ export const getServerSideProps = withSsrSession(async function (
   const similartProducts = await client.product.findMany({
     where: {
       OR: terms,
-      AND: {
-        id: {
-          not: products?.id,
-        },
-      },
     },
   });
 
