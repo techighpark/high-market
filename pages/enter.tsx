@@ -64,7 +64,10 @@ const Enter: NextPage = () => {
       <Head>
         <title>Log In | HighMarket</title>
       </Head>
-      <h3 className="text-center text-3xl font-bold">Welcome to High-Market</h3>
+      <h3 className="text-center text-3xl font-bold">
+        Welcome to
+        <br /> High-Market
+      </h3>
       <div className="mt-12">
         {data?.ok ? (
           <form
