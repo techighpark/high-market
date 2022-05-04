@@ -32,12 +32,12 @@ const Enter: NextPage = () => {
   const { register: tokenRegister, handleSubmit: tokenHandleSubmit } =
     useForm<TokenForm>();
 
-  const [method, setMethod] = useState<"email" | "phone">("email");
+  const [method, setMethod] = useState<"email" | "phone">("phone");
 
-  const onEmailClick = () => {
-    reset();
-    setMethod("email");
-  };
+  // const onEmailClick = () => {
+  //   reset();
+  //   setMethod("email");
+  // };
   const onPhoneClick = () => {
     reset();
     setMethod("phone");
@@ -86,10 +86,10 @@ const Enter: NextPage = () => {
           </form>
         ) : (
           <>
-            <div className="flex flex-col items-center">
+            {/* <div className="flex flex-col items-center">
               <h5 className="text-sm font-medium text-gray-500">Enter using</h5>
-              <div className="mt-8 grid w-full grid-cols-2 border-b ">
-                <button
+              <div className="mt-8 grid w-full grid-cols-1"> */}
+            {/* <button
                   className={cls(
                     "border-b-2 pb-4 text-sm font-medium",
                     method === "email"
@@ -99,20 +99,20 @@ const Enter: NextPage = () => {
                   onClick={onEmailClick}
                 >
                   Email
-                </button>
-                <button
+                </button> */}
+            {/* <button
                   className={cls(
                     "border-b-2 pb-4 text-sm font-medium",
-                    method === "phone"
-                      ? " border-orange-500 text-orange-400"
-                      : "border-transparent text-gray-500 hover:text-gray-400"
+                    // method === "phone"
+                    " border-orange-500 text-orange-400"
+                    // : "border-transparent text-gray-500 hover:text-gray-400"
                   )}
                   onClick={onPhoneClick}
                 >
                   Phone
                 </button>
               </div>
-            </div>
+            </div> */}
             <form
               className="mt-8 flex flex-col space-y-4"
               onSubmit={handleSubmit(onValid)}

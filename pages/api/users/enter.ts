@@ -4,15 +4,15 @@ import withHandler, { ResponseType } from "@libs/server/withHandler";
 import client from "@libs/server/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  secure: true,
-  port: 465,
-  auth: {
-    user: process.env.GMAIL_ID,
-    pass: process.env.GMAIL_PW,
-  },
-});
+// const transporter = nodemailer.createTransport({
+//   host: "smtp.gmail.com",
+//   secure: true,
+//   port: 465,
+//   auth: {
+//     user: process.env.GMAIL_ID,
+//     pass: process.env.GMAIL_PW,
+//   },
+// });
 
 const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
 
@@ -48,21 +48,22 @@ async function handler(
       to: process.env.PHONE_NUM!,
       body: `Your login token is ${payload}`,
     });
-  } else if (email) {
-    console.log("email");
-    await transporter.sendMail({
-      from: `High-Market`,
-      to: process.env.GMAIL_ID,
-      subject: "High-Market Login Token",
-      text: `your login token is ${payload}`,
-      html: `
-        <div style="text-align: center;">
-          <p>Your login token is</p>
-          <strong style="color:blue;">${payload}</strong>
-        </div>
-    `,
-    });
   }
+  // else if (email) {
+  //   console.log("email");
+  //   await transporter.sendMail({
+  //     from: `High-Market`,
+  //     to: process.env.GMAIL_ID,
+  //     subject: "High-Market Login Token",
+  //     text: `your login token is ${payload}`,
+  //     html: `
+  //       <div style="text-align: center;">
+  //         <p>Your login token is</p>
+  //         <strong style="color:blue;">${payload}</strong>
+  //       </div>
+  //   `,
+  //   });
+  // }
   return res.json({
     ok: true,
   });
