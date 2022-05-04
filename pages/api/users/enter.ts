@@ -49,6 +49,7 @@ async function handler(
       body: `Your login token is ${payload}`,
     });
   } else if (email) {
+    console.log("email");
     await transporter.sendMail({
       from: `High-Market`,
       to: process.env.GMAIL_ID,
