@@ -18,11 +18,13 @@ interface TokenForm {
 
 interface MuationResult {
   ok: boolean;
+  token: number;
 }
 
 const Enter: NextPage = () => {
   const [enter, { loading, data, error }] =
     useMutation<MuationResult>("/api/users/enter");
+  console.log(data);
 
   const [confirmToken, { loading: tokenLoading, data: tokenData }] =
     useMutation<MuationResult>("/api/users/confirm");
@@ -69,6 +71,13 @@ const Enter: NextPage = () => {
         <br /> High-Market
       </h3>
       <div className="mt-12">
+        {data?.token ? (
+          <span className="rounded-lg border-2 p-2 text-xs font-semibold">
+            token : <span className="text-orange-500">{data.token}</span>{" "}
+          </span>
+        ) : (
+          ""
+        )}
         {data?.ok ? (
           <form
             className="mt-8 flex flex-col space-y-4"
@@ -84,7 +93,6 @@ const Enter: NextPage = () => {
               kind={Kind.text}
               required
             />
-
             <Button text={tokenLoading ? "Loading......" : "Confirm Token"} />
           </form>
         ) : (

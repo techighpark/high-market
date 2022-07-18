@@ -14,6 +14,7 @@ async function handler(
     },
     include: { user: true },
   });
+
   if (!foundToken) return res.status(404).end();
 
   req.session.user = {

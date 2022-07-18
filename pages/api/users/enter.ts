@@ -22,8 +22,10 @@ async function handler(
 ) {
   const { phone, email } = req.body;
   const user = phone ? { phone } : email ? { email } : null;
+
   if (!user) return res.status(400).json({ ok: false });
   const payload = Math.floor(100000 + Math.random() * 900000) + "";
+
   await client.token.create({
     data: {
       payload,
@@ -41,14 +43,13 @@ async function handler(
     },
   });
 
-  if (phone) {
-    console.log("phone");
-    await twilioClient.messages.create({
-      messagingServiceSid: process.env.TWILIO_SERVICE_SID,
-      to: process.env.PHONE_NUM!,
-      body: `Your login token is ${payload}`,
-    });
-  }
+  // if (phone) {
+  //   await twilioClient.messages.create({
+  //     messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+  //     to: process.env.PHONE_NUM!,
+  //     body: `Your login token is ${payload}`,
+  //   });
+  // }
   // else if (email) {
   //   console.log("email");
   //   await transporter.sendMail({
@@ -66,6 +67,7 @@ async function handler(
   // }
   return res.json({
     ok: true,
+    token: payload,
   });
 }
 
